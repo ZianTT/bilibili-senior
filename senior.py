@@ -17,6 +17,7 @@ if os.path.exists("only_question.txt"):
 modify_ck = ""
 user_tiku_report = False
 
+
 def get_whksoft_token():
     salt = 'zFSiZqkU1Oxfs3oh0UtlBGLsqKQIEdU6'
     nonce = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
@@ -237,6 +238,9 @@ except Exception as e:
 try:
     while True:
         print()
+        if current_score >= 59 and tiku_mode:
+            print("题库模式防通过")
+            break
         try:
             url = "https://api.bilibili.com/x/senior/v1/question"
             data = session.get(url, headers=headers).json()
@@ -260,7 +264,7 @@ try:
                 q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
                 source, author, None
             )
-            time.sleep(610)
+            time.sleep(60)
             continue
         q_s_time = time.time()
         qid_o = qid
@@ -300,9 +304,6 @@ try:
                 "csrf": csrf
             }
             resp = session.post(url, headers=headers, data=data).json()
-            if current_score >= 50 and tiku_mode:
-                print("题库模式防通过")
-                exit()
             if q_order >= 100:
                 print("答题完成")
             if resp["code"] == 0:
@@ -353,8 +354,12 @@ except KeyboardInterrupt:
 
 url = "https://api.bilibili.com/x/senior/v1/answer/result"
 resp = session.get(url, headers=headers).json()
+print(resp)
 score = resp["data"]["score"]
-chance = resp["data"]["chance"]
+if "chance" in resp["data"]:
+    chance = resp["data"]["chance"]
+else:
+    chance = 0
 url = "https://api.bilibili.com/x/senior/v1/member/info"
 resp = session.get(url, headers=headers).json()
 senior_member = resp["data"]["senior_member"]
