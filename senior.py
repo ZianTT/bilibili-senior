@@ -260,7 +260,7 @@ try:
                 q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
                 source, author, None
             )
-            time.sleep(60)
+            time.sleep(610)
             continue
         q_s_time = time.time()
         qid_o = qid
