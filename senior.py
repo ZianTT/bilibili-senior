@@ -11,6 +11,7 @@ tiku_mode = False
 modify_ck = ""
 user_tiku_report = False
 
+
 def get_whksoft_token():
     salt = 'zFSiZqkU1Oxfs3oh0UtlBGLsqKQIEdU6'
     nonce = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
@@ -20,6 +21,10 @@ def get_whksoft_token():
 
 def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, correct_answer):
     print("正在提交题目...")
+    try:
+        int(category)
+    except:
+        category = None
     data = {
         "qid": qid,
         "question": question,
