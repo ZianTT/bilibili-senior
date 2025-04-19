@@ -18,4 +18,11 @@ bilibili 硬核会员 （senior） 自动化答题
 - 在运行文件夹创建`tiku_mode.txt`
 - 下载源码，修改L11为`timu_mode = True`
 
+额外选项：只上传题目内容
+
+好处是不用进行答题，坏处是无法上传答案，开启方法类似
+
+- 在运行文件夹创建`only_question.txt`
+- 下载源码，修改L12为`only_question = True`
+
 我们衷心感谢您对题库做出的贡献！
