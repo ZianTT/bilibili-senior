@@ -8,6 +8,8 @@ import random
 import string
 
 tiku_mode = False
+if os.exists("tiku_mode.txt"):
+    tiku_mode = True
 modify_ck = ""
 user_tiku_report = False
 
