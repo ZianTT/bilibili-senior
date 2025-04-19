@@ -6,13 +6,16 @@ from PIL import Image
 import hashlib
 import random
 import string
+import os
 
 tiku_mode = False
-if os.exists("tiku_mode.txt"):
+only_question = False
+if os.path.exists("tiku_mode.txt"):
     tiku_mode = True
+if os.path.exists("only_question.txt"):
+    only_question = True
 modify_ck = ""
 user_tiku_report = False
-
 
 def get_whksoft_token():
     salt = 'zFSiZqkU1Oxfs3oh0UtlBGLsqKQIEdU6'
@@ -244,6 +247,21 @@ try:
             time.sleep(1)
             continue
         qid = data["data"]["id"]
+        if tiku_mode and only_question:
+            if "source" in q_data["data"]:
+                source = q_data["data"]["source"]
+            else:
+                source = None
+            if "author" in q_data["data"]:
+                author = q_data["data"]["author"]
+            else:
+                author = None
+            report_tiku(qid, ids, q_data["data"]["question"],
+                q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
+                source, author, None
+            )
+            time.sleep(60)
+            continue
         q_s_time = time.time()
         qid_o = qid
         q_order = data["data"]["question_num"]
