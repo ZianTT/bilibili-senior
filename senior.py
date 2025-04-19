@@ -1,5 +1,3 @@
-from calendar import c
-from unicodedata import category
 from openai import OpenAI
 import requests
 import time
@@ -9,8 +7,8 @@ import hashlib
 import random
 import string
 
-tiku_mode = False # 刷题库模式，调试使用
-modify_ck = "" # 覆盖CK，调试使用
+tiku_mode = False
+modify_ck = ""
 user_tiku_report = False
 
 def get_whksoft_token():
@@ -20,7 +18,7 @@ def get_whksoft_token():
     hash = hashlib.md5(f"&s={salt}&t={ts}&n={nonce}".encode()).hexdigest()
     return f"{ts},{nonce},{hash}"
 
-def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,correct_answer):
+def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, correct_answer):
     print("正在提交题目...")
     data = {
         "qid": qid,
@@ -37,6 +35,7 @@ def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,correct_an
         "optionC": ans_3,# compatible with whksoft
         "optionD": ans_4,# compatible with whksoft
         "source": source,
+        "author": author,
         "time": int(time.time() * 1000),# compatible with whksoft
         "category": category,
         "tag": category,# compatible with whksoft
@@ -61,16 +60,18 @@ def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,correct_an
         headers={
                 "User-Agent": "Bilibili Senior Script Report/1.0", 
         }
-        ).json()
-        if req["status"] == "success":
+        )
+        resp = req.json()
+        if resp["status"] == "success":
             print("题库服务器提交成功")
-        elif req["status"] == "exist":
+        elif resp["status"] == "exist":
             print("题目已存在")
         else:
             print("题库服务器提交失败")
-            print(req)
+            print(resp)
     except Exception as e:
         print("题库服务器提交失败")
+        print(req.text)
         print(e)
 
 def qr_login():
@@ -178,9 +179,9 @@ if resp["data"]["eligible"] == False:
     # print(resp)
     # # {'code': 0, 'message': '0', 'ttl': 1, 'data': {'rules': [{'heading': '什么是硬核会员试炼？', 'paragraph': [{'text': '硬核会员试炼，是我们为LV6用户设计的专属挑 战。挑战通过后，能解锁特殊的LV6标识、“硬核会员”称号和权益。'}, {'text': '硬核会员有效期为365天，若365天期满，需重新参与。'}]}, {'heading': '硬核会员有什么权益 ？', 'paragraph': [{'text': '硬核专属举报功能', 'is_new': True}, {'text': '专属三连推荐', 'is_new': True}, {'text': '生日定制彩蛋', 'is_new': True}, {'text': '社区实验室 —— 硬核会员弹幕模式'}, {'text': '特别关注、黑名单上限翻倍'}, {'text': 'LV6试炼出题权'}]}, {'heading': '我怎么才能通过这个测试？', 'paragraph': [{'text': '120min内，答对60道及以上的题目（最多可答100道题），即可通过。\n注意：每24h，最多有3次挑战的机会。'}]}, {'heading': '更多说明', 'paragraph': [{'text': '“ 硬核会员”与“大会员”无关，目前仅通过试炼才能获得该称号。'}, {'text': '若发现您在测试过程中使用非正常技术手段，您可能会被永久禁止参与挑战。'}, {'text': '若您出现了违反社区规范的行为，您的“硬核会员”资格可能会被人工核实后取消。'}]}]}}
     # resp = session.get("https://api.bilibili.com/x/senior/v1/entry", headers=headers).json()
+ids = "2"
 if "stage" not in resp["data"] or resp["data"]["stage"] == 0 or resp["data"]["stage"] == 1:
     print("默认选择：知识区")
-    ids = "2"
     while True:
         resp = session.get("https://api.bilibili.com/x/senior/v1/captcha", headers=headers).json()
         if resp["data"]["type"] != "bilibili":
@@ -237,8 +238,6 @@ try:
             continue
         qid = data["data"]["id"]
         q_s_time = time.time()
-        if qid == qid_o:
-            continue
         qid_o = qid
         q_order = data["data"]["question_num"]
         print("题号："+str(q_order))
@@ -276,7 +275,7 @@ try:
                 "csrf": csrf
             }
             resp = session.post(url, headers=headers, data=data).json()
-            if q_order >= 40 and tiku_mode:
+            if current_score >= 50 and tiku_mode:
                 print("题库模式防通过")
                 exit()
             if q_order >= 100:
@@ -301,10 +300,18 @@ try:
                         print(e)
                 if tiku_mode or user_tiku_report:
                     correct_answer = answer if correct_flag else None
+                    if "source" in q_data["data"]:
+                        source = q_data["data"]["source"]
+                    else:
+                        source = None
+                    if "author" in q_data["data"]:
+                        author = q_data["data"]["author"]
+                    else:
+                        author = None
                     print(q_data)
-                    report_tiku(qid, "2", q_data["data"]["question"],
+                    report_tiku(qid, ids, q_data["data"]["question"],
                         q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
-                        q_data["data"]["source"], correct_answer
+                        source, author, correct_answer
                     )
             elif resp["code"] == 41105:
                 print("答题完成")
