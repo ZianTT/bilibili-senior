@@ -172,16 +172,27 @@ else:
 # check eligibility
 resp = session.get("https://api.bilibili.com/x/senior/v1/entry", headers=headers).json()
 if resp["data"]["eligible"] == False:
-    print("您不是Lv6用户，无法使用此脚本")
+    print("您不是Lv6用户或答题次数用尽，无法使用此脚本")
+    exit(0)
     # resp = session.get("https://api.bilibili.com/x/senior/v1/answer/rule", headers=headers).json()
     # print(resp)
     # # {'code': 0, 'message': '0', 'ttl': 1, 'data': {'rules': [{'heading': '什么是硬核会员试炼？', 'paragraph': [{'text': '硬核会员试炼，是我们为LV6用户设计的专属挑 战。挑战通过后，能解锁特殊的LV6标识、“硬核会员”称号和权益。'}, {'text': '硬核会员有效期为365天，若365天期满，需重新参与。'}]}, {'heading': '硬核会员有什么权益 ？', 'paragraph': [{'text': '硬核专属举报功能', 'is_new': True}, {'text': '专属三连推荐', 'is_new': True}, {'text': '生日定制彩蛋', 'is_new': True}, {'text': '社区实验室 —— 硬核会员弹幕模式'}, {'text': '特别关注、黑名单上限翻倍'}, {'text': 'LV6试炼出题权'}]}, {'heading': '我怎么才能通过这个测试？', 'paragraph': [{'text': '120min内，答对60道及以上的题目（最多可答100道题），即可通过。\n注意：每24h，最多有3次挑战的机会。'}]}, {'heading': '更多说明', 'paragraph': [{'text': '“ 硬核会员”与“大会员”无关，目前仅通过试炼才能获得该称号。'}, {'text': '若发现您在测试过程中使用非正常技术手段，您可能会被永久禁止参与挑战。'}, {'text': '若您出现了违反社区规范的行为，您的“硬核会员”资格可能会被人工核实后取消。'}]}]}}
     # resp = session.get("https://api.bilibili.com/x/senior/v1/entry", headers=headers).json()
 ids = "2"
+if resp["data"].get("stage", 0) == 2:
+    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/N）")
+    if if_reset.lower() == "y":
+        resp_reset = session.post("https://api.bilibili.com/x/senior/v1/answer/exit", headers=headers, data={"csrf": csrf}).json()
+        print(resp_reset)
+    else:
+        print("继续答题")
 if "stage" not in resp["data"] or resp["data"]["stage"] == 0 or resp["data"]["stage"] == 1:
     print("默认选择：知识区")
     while True:
         resp = session.get("https://api.bilibili.com/x/senior/v1/captcha", headers=headers).json()
+        if resp["code"] == 41099:
+            print("您不是Lv6用户或答题次数用尽，无法使用此脚本")
+            exit(0)
         if resp["data"]["type"] != "bilibili":
             print("请在手机上完成极验验证")
             exit(0)
@@ -219,14 +230,6 @@ elif resp["data"]["stage"] == 3:
     if if_continue.lower() == "n":
         print("退出脚本")
         exit(0)
-    else:
-        print("继续答题")
-elif resp["data"]["stage"] == 2:
-    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/N）")
-    if if_reset.lower() == "y":
-        resp = session.post("https://api.bilibili.com/x/senior/v1/answer/exit", headers=headers, data={"csrf": csrf})
-        print(resp)
-        time.sleep(1)
     else:
         print("继续答题")
 qid_o = 0
