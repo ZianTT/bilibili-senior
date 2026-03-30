@@ -213,9 +213,11 @@ elif resp["data"]["stage"] == 3:
     print("您已经答题完成")
     exit()
 elif resp["data"]["stage"] == 2:
-    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（Y/n）")
+    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/N）")
     if if_reset.lower() == "y":
-        session.post("https://api.bilibili.com/x/senior/v1/answer/exit", headers=headers, data={"csrf": csrf})
+        resp = session.post("https://api.bilibili.com/x/senior/v1/answer/exit", headers=headers, data={"csrf": csrf})
+        print(resp)
+        time.sleep(1)
     else:
         print("继续答题")
 qid_o = 0
