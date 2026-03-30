@@ -16,6 +16,10 @@ if os.path.exists("only_question.txt"):
     only_question = True
 modify_ck = ""
 user_tiku_report = False
+if tiku_mode:
+    print("已开启题库模式")
+if only_question:
+    print("已开启仅上传题目模式")
 
 def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, correct_answer):
     print("正在提交题目...")
@@ -134,9 +138,6 @@ if llm_endpoint == "":
     llm_endpoint = "https://api.deepseek.com"
 print("请输入LLM密钥(通常为sk-xxxx)")
 llm_key = input()
-if llm_key == "":
-    print("请添加LLM密钥")
-    exit(0)
 print("请输入模型名称，留空则采用DeepSeekV3")
 model_name = input()
 if model_name == "":
@@ -150,17 +151,21 @@ except Exception as e:
     print(e)
     exit(0)
 
-while True:
-    user_tiku_report_prompt = input("本项目已参与题目补全计划，请确认是否愿意参与计划（完全匿名，不用担心隐私泄露）请输入（y/n）")
-    user_tiku_report_prompt = user_tiku_report_prompt.lower()
-    if user_tiku_report_prompt == "y":
-        user_tiku_report = True
-        break
-    elif user_tiku_report_prompt == "n":
-        user_tiku_report = False
-        break
-    else:
-        print("输入错误，请重新输入")
+if tiku_mode:
+    print("题库模式已开启，脚本将自动上传题目和答案到题库服务器")
+    user_tiku_report = True
+else:
+    while True:
+        user_tiku_report_prompt = input("本项目已参与题目补全计划，请确认是否愿意参与计划（完全匿名，不用担心隐私泄露）请输入（y/n）")
+        user_tiku_report_prompt = user_tiku_report_prompt.lower()
+        if user_tiku_report_prompt == "y":
+            user_tiku_report = True
+            break
+        elif user_tiku_report_prompt == "n":
+            user_tiku_report = False
+            break
+        else:
+            print("输入错误，请重新输入")
 
 if "bili_jct" in headers.get("Cookie", ""):
         csrf = headers["Cookie"].split("bili_jct=")[1].split(";")[0]
