@@ -215,8 +215,12 @@ if "stage" not in resp["data"] or resp["data"]["stage"] == 0 or resp["data"]["st
             print("验证码提交失败")
             print(capt_resp)
 elif resp["data"]["stage"] == 3:
-    print("您已经答题完成")
-    exit()
+    if_continue = input("检测到您已经完成答题，是否继续答题以获取更多题库数据？（Y/n）")
+    if if_continue.lower() == "n":
+        print("退出脚本")
+        exit(0)
+    else:
+        print("继续答题")
 elif resp["data"]["stage"] == 2:
     if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/N）")
     if if_reset.lower() == "y":
@@ -250,7 +254,7 @@ try:
             time.sleep(1)
             continue
         qid = data["data"]["id"]
-        if tiku_mode and only_question:
+        if only_question:
             if "source" in q_data["data"]:
                 source = q_data["data"]["source"]
             else:
@@ -263,7 +267,6 @@ try:
                 q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
                 source, author, None
             )
-            time.sleep(60)
             continue
         q_s_time = time.time()
         qid_o = qid
