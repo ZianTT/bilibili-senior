@@ -47,6 +47,8 @@ def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, co
             print("题库服务器提交成功")
         elif resp["status"] == "exist":
             print("题目已存在")
+        elif resp["status"] == "updated":
+            print("题目已存在但答案已更新")
         else:
             print("题库服务器提交失败")
             print(resp)

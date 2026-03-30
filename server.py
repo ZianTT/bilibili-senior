@@ -50,9 +50,16 @@ def submit_question():
 
     try:
         # Check if question already exists
-        cursor.execute("SELECT qid FROM questions WHERE qid = ?", (qid,))
-        if cursor.fetchone():
-            return jsonify({"status": "exist"})
+        cursor.execute("SELECT qid, answer FROM questions WHERE qid = ?", (qid,))
+        existing = cursor.fetchone()
+        if existing:
+            existing_qid, existing_answer = existing
+            if existing_answer is None and answer is not None:
+                # Update existing question with new answer
+                cursor.execute("UPDATE questions SET answer = ? WHERE qid = ?", (answer, qid))
+                conn.commit()
+                return jsonify({"status": "updated", "message": "Question updated with new answer"})
+            return jsonify({"status": "exists", "message": "Question already exists"})
 
         # Insert new question
         cursor.execute('''
@@ -66,6 +73,35 @@ def submit_question():
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
         conn.close()
+
+@app.route('/statistics', methods=['GET'])
+def statistics():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM questions")
+    total = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM questions WHERE answer IS NOT NULL")
+    answered = cursor.fetchone()[0]
+    conn.close()
+    data = {
+        "total_questions": total,
+        "answered_questions": answered,
+        "unanswered_questions": total - answered
+    }
+    return jsonify(data)
+
+@app.route('/question/<qid>', methods=['GET'])
+def get_question(qid):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM questions WHERE qid = ?", (qid,))
+    question = cursor.fetchone()
+    conn.close()
+    if question:
+        keys = ["qid", "question", "ans_1", "ans_2", "ans_3", "ans_4", "answer", "source", "author", "category"]
+        return jsonify(dict(zip(keys, question)))
+    else:
+        return jsonify({"status": "error", "message": "Question not found"}), 404
 
 if __name__ == '__main__':
     init_db()
