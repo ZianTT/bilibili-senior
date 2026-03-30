@@ -115,8 +115,10 @@ headers = {
 }
 session.headers.update(headers)
 if os.path.exists("cookie.txt"):
-    if_use_cookie = input("检测到cookie.txt，是否使用其中的cookie进行登录？（y/n）")
-    if if_use_cookie.lower() == "y":
+    if_use_cookie = input("检测到cookie.txt，是否使用其中的cookie进行登录？（Y/n）")
+    if if_use_cookie.lower() == "n":
+        qr_login()
+    else:
         with open("cookie.txt", "r") as f:
             cookie = f.read().strip()
             cookies = {}
@@ -125,8 +127,6 @@ if os.path.exists("cookie.txt"):
                     k, v = item.strip().split("=", 1)
                     cookies[k] = v
             session.cookies.update(cookies)
-    else:
-        qr_login()
 else:
     qr_login()
 headers["Cookie"] = "; ".join([f"{k}={v}" for k, v in session.cookies.get_dict().items()])
@@ -155,17 +155,12 @@ if tiku_mode:
     print("题库模式已开启，脚本将自动上传题目和答案到题库服务器")
     user_tiku_report = True
 else:
-    while True:
-        user_tiku_report_prompt = input("本项目已参与题目补全计划，请确认是否愿意参与计划（完全匿名，不用担心隐私泄露）请输入（y/n）")
-        user_tiku_report_prompt = user_tiku_report_prompt.lower()
-        if user_tiku_report_prompt == "y":
-            user_tiku_report = True
-            break
-        elif user_tiku_report_prompt == "n":
-            user_tiku_report = False
-            break
-        else:
-            print("输入错误，请重新输入")
+    user_tiku_report_prompt = input("本项目已参与题目补全计划，请确认是否愿意参与计划（完全匿名，不用担心隐私泄露）请输入（Y/n）")
+    user_tiku_report_prompt = user_tiku_report_prompt.lower()
+    if user_tiku_report_prompt == "n":
+        user_tiku_report = False
+    else:
+        user_tiku_report = True
 
 if "bili_jct" in headers.get("Cookie", ""):
         csrf = headers["Cookie"].split("bili_jct=")[1].split(";")[0]
@@ -218,7 +213,7 @@ elif resp["data"]["stage"] == 3:
     print("您已经答题完成")
     exit()
 elif resp["data"]["stage"] == 2:
-    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/n）")
+    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（Y/n）")
     if if_reset.lower() == "y":
         session.post("https://api.bilibili.com/x/senior/v1/answer/exit", headers=headers, data={"csrf": csrf})
     else:
