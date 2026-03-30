@@ -83,6 +83,10 @@ def qr_login():
         check = req.json()["data"]
         if check["code"] == 0:
             print("登录成功")
+            # save cookie to file
+            with open("cookie.txt", "w") as f:
+                cookie = session.cookies.get_dict()
+                f.write("; ".join([f"{k}={v}" for k, v in cookie.items()]))
             break
         elif check["code"] == 86101:
             pass
@@ -101,15 +105,26 @@ def qr_login():
 
 session = requests.Session()
 headers = {
-    "Cookie": modify_ck,
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
 }
 session.headers.update(headers)
-
-if modify_ck == "":
+if os.path.exists("cookie.txt"):
+    if_use_cookie = input("检测到cookie.txt，是否使用其中的cookie进行登录？（y/n）")
+    if if_use_cookie.lower() == "y":
+        with open("cookie.txt", "r") as f:
+            cookie = f.read().strip()
+            cookies = {}
+            for item in cookie.split(";"):
+                if "=" in item:
+                    k, v = item.strip().split("=", 1)
+                    cookies[k] = v
+            session.cookies.update(cookies)
+    else:
+        qr_login()
+else:
     qr_login()
-    cookie = session.cookies.get_dict()
-    headers["Cookie"] = "; ".join([f"{k}={v}" for k, v in cookie.items()])
+headers["Cookie"] = "; ".join([f"{k}={v}" for k, v in session.cookies.get_dict().items()])
+
 
 print("请输入LLM端点，留空则使用DeepSeek")
 llm_endpoint = input()
@@ -145,7 +160,7 @@ while True:
     else:
         print("输入错误，请重新输入")
 
-if "bili_jct" in headers["Cookie"]:
+if "bili_jct" in headers.get("Cookie", ""):
         csrf = headers["Cookie"].split("bili_jct=")[1].split(";")[0]
 else:
     print("请在headers中添加bili_jct(csrf)")
@@ -208,7 +223,7 @@ except Exception as e:
 try:
     while True:
         print()
-        if current_score >= 59 and tiku_mode:
+        if current_score >= 50 and tiku_mode:
             print("题库模式防通过")
             break
         try:
