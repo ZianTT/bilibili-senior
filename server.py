@@ -102,6 +102,16 @@ def get_question(qid):
         return jsonify(dict(zip(keys, question)))
     else:
         return jsonify({"status": "error", "message": "Question not found"}), 404
+    
+@app.route('/unanswered', methods=['GET'])
+def get_unanswered():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM questions WHERE answer IS NULL")
+    questions = cursor.fetchall()
+    conn.close()
+    keys = ["qid", "question", "ans_1", "ans_2", "ans_3", "ans_4", "answer", "source", "author", "category"]
+    return jsonify([dict(zip(keys, q)) for q in questions])
 
 if __name__ == '__main__':
     init_db()
