@@ -196,19 +196,24 @@ if "stage" not in resp["data"] or resp["data"]["stage"] == 0 or resp["data"]["st
         captcha = input("请输入验证码(留空刷新):")
         if captcha == "":
             continue
-        else:
+        data = {
+            "ids": ids,
+            "type": "bilibili",
+            "bili_token": token,
+            "bili_code": captcha,
+            "gt_challenge": "",
+            "gt_validate": "",
+            "gt_seccode": "",
+            "csrf": csrf
+        }
+        capt_resp = session.post("https://api.bilibili.com/x/senior/v1/captcha/submit", headers=headers, data=data).json()
+        if capt_resp["code"] == -105:
+            print("验证码错误")
+        elif capt_resp["code"] == 0:
             break
-    data = {
-        "ids": ids,
-        "type": "bilibili",
-        "bili_token": token,
-        "bili_code": captcha,
-        "gt_challenge": "",
-        "gt_validate": "",
-        "gt_seccode": "",
-        "csrf": csrf
-    }
-    capt_resp = session.post("https://api.bilibili.com/x/senior/v1/captcha/submit", headers=headers, data=data).json()
+        else:
+            print("验证码提交失败")
+            print(capt_resp)
 elif resp["data"]["stage"] == 3:
     print("您已经答题完成")
     exit()
