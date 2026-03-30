@@ -59,7 +59,7 @@ def submit_question():
                 cursor.execute("UPDATE questions SET answer = ? WHERE qid = ?", (answer, qid))
                 conn.commit()
                 return jsonify({"status": "updated", "message": "Question updated with new answer"})
-            return jsonify({"status": "exists", "message": "Question already exists"})
+            return jsonify({"status": "exist", "message": "Question already exists"})
 
         # Insert new question
         cursor.execute('''
