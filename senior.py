@@ -17,14 +17,6 @@ if os.path.exists("only_question.txt"):
 modify_ck = ""
 user_tiku_report = False
 
-
-def get_whksoft_token():
-    salt = 'zFSiZqkU1Oxfs3oh0UtlBGLsqKQIEdU6'
-    nonce = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-    ts = int(time.time() * 1000)
-    hash = hashlib.md5(f"&s={salt}&t={ts}&n={nonce}".encode()).hexdigest()
-    return f"{ts},{nonce},{hash}"
-
 def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, correct_answer):
     print("正在提交题目...")
     try:
@@ -34,37 +26,15 @@ def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, co
     data = {
         "qid": qid,
         "question": question,
-        "title": question,# compatible with whksoft
         "ans_1": ans_1,
         "ans_2": ans_2,
         "ans_3": ans_3,
         "ans_4": ans_4,
         "answer": correct_answer,
-        "type": 0, # compatible with whksoft
-        "optionA": ans_1,# compatible with whksoft
-        "optionB": ans_2,# compatible with whksoft
-        "optionC": ans_3,# compatible with whksoft
-        "optionD": ans_4,# compatible with whksoft
         "source": source,
         "author": author,
-        "time": int(time.time() * 1000),# compatible with whksoft
         "category": category,
-        "tag": category,# compatible with whksoft
     }
-    # req = session.post(
-    #    "https://api-q.whksoft.cn/question/add?token="+get_whksoft_token(), json=data,headers={
-    #         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-    #         "Content-Type": "application/json",
-    #         "Authorization": "Basic d2hrc29mdDp3aGsxMjM0NQ==",
-    #     },
-    #     verify=False
-    # )
-    # if req.status_code == 200:
-    #     print("提交成功")
-    #     print(req.text)
-    # else:
-    #     print("提交失败")
-    #     print(req.text)
     try:
         req = session.post(
         "https://senior.ziantt.top/submit", json=data,
