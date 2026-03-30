@@ -217,7 +217,12 @@ if "stage" not in resp["data"] or resp["data"]["stage"] == 0 or resp["data"]["st
 elif resp["data"]["stage"] == 3:
     print("您已经答题完成")
     exit()
-
+elif resp["data"]["stage"] == 2:
+    if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/n）")
+    if if_reset.lower() == "y":
+        session.post("https://api.bilibili.com/x/senior/v1/answer/exit", headers=headers, data={"csrf": csrf})
+    else:
+        print("继续答题")
 qid_o = 0
 try:
     url = "https://api.bilibili.com/x/senior/v1/answer/result"
