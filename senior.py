@@ -230,7 +230,7 @@ except Exception as e:
 try:
     while True:
         print()
-        if current_score >= 50 and tiku_mode:
+        if current_score >= 59 and tiku_mode:
             print("题库模式防通过")
             break
         try:
