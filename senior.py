@@ -9,17 +9,12 @@ import string
 import os
 
 tiku_mode = False
-only_question = False
 if os.path.exists("tiku_mode.txt"):
     tiku_mode = True
-if os.path.exists("only_question.txt"):
-    only_question = True
 modify_ck = ""
 user_tiku_report = False
 if tiku_mode:
     print("已开启题库模式")
-if only_question:
-    print("已开启仅上传题目模式")
 
 def report_tiku(qid, category,question,ans_1,ans_2,ans_3,ans_4,source,author, correct_answer):
     print("正在提交题目...")
@@ -167,8 +162,14 @@ if "bili_jct" in headers.get("Cookie", ""):
 else:
     print("请在headers中添加bili_jct(csrf)")
     exit(0)
-
-# {'code': 0, 'message': '0', 'ttl': 1, 'data': {'categories': [{'id': 1, 'name': '动画/漫画'}, {'id': 2, 'name': '知识'}, {'id': 3, 'name': '影视'}, {'id': 4, 'name': '音乐'}, {'id': 5, 'name': '鬼畜'}, {'id': 6, 'name': '文史'}, {'id': 7, 'name': '游戏'}, {'id': 8, 'name': '体育'}]}}
+# 1 动画/漫画
+# 2 知识
+# 3 影视
+# 4 音乐
+# 5 鬼畜
+# 6 文史
+# 7 游戏
+# 8 体育
 # check eligibility
 resp = session.get("https://api.bilibili.com/x/senior/v1/entry", headers=headers).json()
 if resp["data"]["eligible"] == False:
@@ -178,7 +179,8 @@ if resp["data"]["eligible"] == False:
     # print(resp)
     # # {'code': 0, 'message': '0', 'ttl': 1, 'data': {'rules': [{'heading': '什么是硬核会员试炼？', 'paragraph': [{'text': '硬核会员试炼，是我们为LV6用户设计的专属挑 战。挑战通过后，能解锁特殊的LV6标识、“硬核会员”称号和权益。'}, {'text': '硬核会员有效期为365天，若365天期满，需重新参与。'}]}, {'heading': '硬核会员有什么权益 ？', 'paragraph': [{'text': '硬核专属举报功能', 'is_new': True}, {'text': '专属三连推荐', 'is_new': True}, {'text': '生日定制彩蛋', 'is_new': True}, {'text': '社区实验室 —— 硬核会员弹幕模式'}, {'text': '特别关注、黑名单上限翻倍'}, {'text': 'LV6试炼出题权'}]}, {'heading': '我怎么才能通过这个测试？', 'paragraph': [{'text': '120min内，答对60道及以上的题目（最多可答100道题），即可通过。\n注意：每24h，最多有3次挑战的机会。'}]}, {'heading': '更多说明', 'paragraph': [{'text': '“ 硬核会员”与“大会员”无关，目前仅通过试炼才能获得该称号。'}, {'text': '若发现您在测试过程中使用非正常技术手段，您可能会被永久禁止参与挑战。'}, {'text': '若您出现了违反社区规范的行为，您的“硬核会员”资格可能会被人工核实后取消。'}]}]}}
     # resp = session.get("https://api.bilibili.com/x/senior/v1/entry", headers=headers).json()
-ids = "2"
+ids = "1"
+continue_data = False
 if resp["data"].get("stage", 0) == 2:
     if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/N）")
     if if_reset.lower() == "y":
@@ -227,6 +229,7 @@ if "stage" not in resp["data"] or resp["data"]["stage"] == 0 or resp["data"]["st
             print(capt_resp)
 elif resp["data"]["stage"] == 3:
     if_continue = input("检测到您已经完成答题，是否继续答题以获取更多题库数据？（Y/n）")
+    continue_data = True
     if if_continue.lower() == "n":
         print("退出脚本")
         exit(0)
@@ -244,9 +247,6 @@ except Exception as e:
 try:
     while True:
         print()
-        if current_score >= 59 and tiku_mode:
-            print("题库模式防通过")
-            break
         try:
             url = "https://api.bilibili.com/x/senior/v1/question"
             data = session.get(url, headers=headers).json()
@@ -257,20 +257,7 @@ try:
             time.sleep(1)
             continue
         qid = data["data"]["id"]
-        if only_question:
-            if "source" in q_data["data"]:
-                source = q_data["data"]["source"]
-            else:
-                source = None
-            if "author" in q_data["data"]:
-                author = q_data["data"]["author"]
-            else:
-                author = None
-            report_tiku(qid, ids, q_data["data"]["question"],
-                q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
-                source, author, None
-            )
-            continue
+
         q_s_time = time.time()
         qid_o = qid
         q_order = data["data"]["question_num"]
@@ -279,6 +266,24 @@ try:
         print("当前题目："+data["data"]["question"])
         for i in data["data"]["answers"]:
             print(i["ans_text"])
+        if "source" in q_data["data"]:
+            source = q_data["data"]["source"]
+        else:
+            source = None
+        if "author" in q_data["data"]:
+            author = q_data["data"]["author"]
+        else:
+            author = None
+        if continue_data:
+            report_tiku(qid, ids, q_data["data"]["question"],
+                q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
+                source, author, None
+            )
+            continue
+        
+        if current_score >= 59 and tiku_mode:
+            print("题库模式防通过")
+            break
         try:
             response = client.chat.completions.create(
                 model=model_name,
@@ -309,8 +314,6 @@ try:
                 "csrf": csrf
             }
             resp = session.post(url, headers=headers, data=data).json()
-            if q_order >= 100:
-                print("答题完成")
             if resp["code"] == 0:
                 print("答题成功")
                 print("耗时："+str(time.time()-q_s_time))
@@ -331,14 +334,6 @@ try:
                         print(e)
                 if tiku_mode or user_tiku_report:
                     correct_answer = answer if correct_flag else None
-                    if "source" in q_data["data"]:
-                        source = q_data["data"]["source"]
-                    else:
-                        source = None
-                    if "author" in q_data["data"]:
-                        author = q_data["data"]["author"]
-                    else:
-                        author = None
                     print(q_data)
                     report_tiku(qid, ids, q_data["data"]["question"],
                         q_data["data"]["answers"][0]["ans_text"], q_data["data"]["answers"][1]["ans_text"], q_data["data"]["answers"][2]["ans_text"], q_data["data"]["answers"][3]["ans_text"],
