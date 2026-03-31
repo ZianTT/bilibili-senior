@@ -179,7 +179,7 @@ if resp["data"]["eligible"] == False:
     # print(resp)
     # # {'code': 0, 'message': '0', 'ttl': 1, 'data': {'rules': [{'heading': '什么是硬核会员试炼？', 'paragraph': [{'text': '硬核会员试炼，是我们为LV6用户设计的专属挑 战。挑战通过后，能解锁特殊的LV6标识、“硬核会员”称号和权益。'}, {'text': '硬核会员有效期为365天，若365天期满，需重新参与。'}]}, {'heading': '硬核会员有什么权益 ？', 'paragraph': [{'text': '硬核专属举报功能', 'is_new': True}, {'text': '专属三连推荐', 'is_new': True}, {'text': '生日定制彩蛋', 'is_new': True}, {'text': '社区实验室 —— 硬核会员弹幕模式'}, {'text': '特别关注、黑名单上限翻倍'}, {'text': 'LV6试炼出题权'}]}, {'heading': '我怎么才能通过这个测试？', 'paragraph': [{'text': '120min内，答对60道及以上的题目（最多可答100道题），即可通过。\n注意：每24h，最多有3次挑战的机会。'}]}, {'heading': '更多说明', 'paragraph': [{'text': '“ 硬核会员”与“大会员”无关，目前仅通过试炼才能获得该称号。'}, {'text': '若发现您在测试过程中使用非正常技术手段，您可能会被永久禁止参与挑战。'}, {'text': '若您出现了违反社区规范的行为，您的“硬核会员”资格可能会被人工核实后取消。'}]}]}}
     # resp = session.get("https://api.bilibili.com/x/senior/v1/entry", headers=headers).json()
-ids = "1"
+ids = "4"
 continue_data = False
 if resp["data"].get("stage", 0) == 2:
     if_reset = input("检测到您已经完成部分答题，是否重置答题进度？（y/N）")
@@ -346,6 +346,9 @@ try:
                 print("答题过快")
             elif resp["code"] == 41103:
                 print("已回答过")
+                if user_tiku_report or tiku_mode:
+                    print("回答已结束，正在继续答题以获取更多题库数据，如需取消请按Ctrl+C或直接关闭窗口")
+                    continue_data = True
         except Exception as e:
             print("答题失败")
             print(e)
